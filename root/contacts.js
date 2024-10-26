@@ -7,9 +7,9 @@ const contactsPath = path.resolve(__dirname, "../db/contacts.json");
 const listContacts = async () => {
   try {
     const dataJson = await fs.readFile(contactsPath, "utf-8");
-    const contactList = JSON.parse(dataJson);
-    console.table(contactList);
-    return contactList;
+    const contacts = JSON.parse(dataJson);
+    console.table(contacts);
+    return contacts;
   } catch (err) {
     console.error("Błąd odczytu listy ", err);
   }
@@ -36,20 +36,31 @@ const removeContact = async (contactId) => {
   try {
     const dataJson = await fs.readFile(contactsPath, "utf-8");
     const contacts = JSON.parse(dataJson);
-    fs.unlink(
-      contactsPath,
-      contacts.filter((contact) => contact.id !== contactId)
+    const updatedContacts = contacts.filter(
+      (contact) => contact.id !== contactId
     );
+    await fs.writeFile(
+      contactsPath,
+      JSON.stringify(updatedContacts, null, 2),
+      "utf-8"
+    );
+
+    console.log(`Kontakt o id ${contactId} został usunięty.`);
   } catch (err) {
     console.error("Błąd usuwania kontaktu ", err);
   }
 };
 
-const addContact = (name, email, phone) => {
+const addContact = async (name, email, phone) => {
   try {
+    const dataJson = await fs.readFile(contactsPath, "utf-8");
+    const contacts = JSON.parse(dataJson);
     const id = uuidv4();
     const newContact = { id, name, email, phone };
-    fs.appendFile(contactsPath, newContact);
+    contacts.push(newContact);
+    await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
+    console.log("Kontakt dodany:", newContact);
+    return newContact;
   } catch (err) {
     console.error("Błąd dodawania kontaktu ", err);
   }
