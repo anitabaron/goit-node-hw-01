@@ -1,22 +1,58 @@
-import * as fs from "fs";
-import * as path from "path";
-import { v4 as uuidv4 } from "uuid";
+const fs = require("fs").promises;
+const path = require("path");
+const { v4: uuidv4 } = require("uuid");
 
-const contactsPath = path.join(__dirname, "../db/contacts.json");
-// console.log(contactsPath);
+const contactsPath = path.resolve(__dirname, "../db/contacts.json");
 
-export const listContacts = () => {
-  fs.readFile(contactsPath);
+const listContacts = async () => {
+  try {
+    const dataJson = await fs.readFile(contactsPath, "utf-8");
+    const contactList = JSON.parse(dataJson);
+    console.table(contactList);
+    return contactList;
+  } catch (err) {
+    console.error("Błąd odczytu listy ", err);
+  }
 };
 
-export const getContactById = (contactId) => {};
-
-export const removeContact = (contactId) => {
-  fs.unlink(contactsPath, () => {});
+const getContactById = async (contactId) => {
+  try {
+    const dataJson = await fs.readFile(contactsPath, "utf-8");
+    const contacts = JSON.parse(dataJson);
+    const contact = contacts.find((contact) => contact.id === contactId);
+    if (contact) {
+      console.table(contact);
+      return contact;
+    } else {
+      console.log(`Kontakt id:${contactId} nie został znaleziony.`);
+      return null;
+    }
+  } catch (err) {
+    console.error("Błąd odnalezienia kontaktu ", err);
+  }
 };
 
-export const addContact = (name, email, phone) => {
-  const id = uuidv4();
-  const newContact = { id, name, email, phone };
-  fs.appendFile(contactsPath, newContact);
+const removeContact = async (contactId) => {
+  try {
+    const dataJson = await fs.readFile(contactsPath, "utf-8");
+    const contacts = JSON.parse(dataJson);
+    fs.unlink(
+      contactsPath,
+      contacts.filter((contact) => contact.id !== contactId)
+    );
+  } catch (err) {
+    console.error("Błąd usuwania kontaktu ", err);
+  }
 };
+
+const addContact = (name, email, phone) => {
+  try {
+    const id = uuidv4();
+    const newContact = { id, name, email, phone };
+    fs.appendFile(contactsPath, newContact);
+  } catch (err) {
+    console.error("Błąd dodawania kontaktu ", err);
+  }
+};
+
+module.exports = { listContacts, getContactById, removeContact, addContact };

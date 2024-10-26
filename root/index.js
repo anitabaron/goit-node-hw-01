@@ -1,11 +1,5 @@
-import {
-  listContacts,
-  getContactById,
-  removeContact,
-  addContact,
-} from "./contacts";
-
-import { Command } from "commander";
+const contactFeature = require("./contacts");
+const { Command } = require("commander");
 
 const program = new Command();
 program
@@ -19,22 +13,22 @@ program.parse(process.argv);
 
 const argv = program.opts();
 
-function invokeAction({ action, id, name, email, phone }) {
+async function invokeAction({ action, id, name, email, phone }) {
   switch (action) {
     case "list":
-      // ...
+      await contactFeature.listContacts();
       break;
 
     case "get":
-      // ... id
+      await contactFeature.getContactById(id);
       break;
 
     case "add":
-      // ... name email phone
+      await contactFeature.addContact(name, email, phone);
       break;
 
     case "remove":
-      // ... id
+      await contactFeature.removeContact(id);
       break;
 
     default:
